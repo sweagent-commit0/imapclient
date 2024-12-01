@@ -106,7 +106,15 @@ class Quota:
 
 def require_capability(capability):
     """Decorator raising CapabilityError when a capability is not available."""
-    pass
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if capability not in self.capabilities():
+                raise exceptions.CapabilityError(
+                    "{} capability not supported by server".format(capability))
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
 
 class IMAPClient:
     """A connection to the IMAP server specified by *host* is made when
